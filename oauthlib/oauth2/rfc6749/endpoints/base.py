@@ -88,6 +88,25 @@ class BaseEndpoint:
                 raise InvalidRequestError(request=request,
                                           description=('URL query parameters are not allowed'))
 
+    def _raise_on_bad_content_type(self, request, allowed_type):
+        """
+        Raise `UnsupportedTokenTypeError` if the request ``Content-Type`` header
+        does not match the expected value.
+
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param allowed_type: Expected Content-Type header value.
+        :type allowed_type: str
+        """
+        content_type = request.headers.get("Content-Type", "").strip().lower()
+        expected_type = allowed_type.strip().lower()
+
+        if content_type and content_type != expected_type:
+            raise UnsupportedTokenTypeError(
+                request=request,
+                description=f"Invalid Content-Type. Must be: {allowed_type}"
+            )
+
 def catch_errors_and_unavailability(f):
     @functools.wraps(f)
     def wrapper(endpoint, uri, *args, **kwargs):
